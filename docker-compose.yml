@@ -1,0 +1,23 @@
+# version: '3'
+services:
+  jenkins:
+    image: jenkins/jenkins:lts #jenkins is runner
+    privileged: true
+    user: root
+    ports:
+      - 8080:8080     #for web interface
+      - 50000:50000   #for jenkins slave agents (runner or agents))
+    container_name: jenkins-lts
+    volumes:
+      - "/home/chamraoen/DevOp/TP1/jenkins_home:/var/jenkins_home" #for save data on outside when you run docker compose down(data )
+    links:
+      - "db:database" #run to the db server
+  db:
+    image: mysql:latest
+    user: root
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    volumes:
+      - "/home/chamraoen/DevOp/TP1/mysql:/var/lib/mysql"

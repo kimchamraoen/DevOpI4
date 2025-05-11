@@ -1,7 +1,7 @@
 FROM jenkins/ssh-agent:latest
 # install dependencies for laravel
 RUN apt update && apt install -y \
-    php8.3 \
+    php8.2 \
     php-xml \
     php-mbstring \
     php-curl \

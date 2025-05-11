@@ -7,7 +7,7 @@ services:
     ports:
       - 8080:8080     #for web interface
       - 50000:50000   #for jenkins slave agents (runner or agents))
-    container_name: jenkins-lts
+    container_name: jenkins
     volumes:
       - "/home/chamraoen/DevOp/TP1/jenkins_home:/var/jenkins_home" #for save data on outside when you run docker compose down(data )
     links:

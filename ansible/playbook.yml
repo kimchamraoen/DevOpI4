@@ -1,0 +1,46 @@
+---
+- name: Update web server pod and manage databases
+  hosts: myservers
+  become: yes
+  tasks:
+    - name: Ensure no local changes in the git repository
+      command: git status --porcelain
+      register: git_status
+      args:
+        chdir: /path/to/your/repo  # Change to your repo path
+
+    - name: Fail if there are local changes
+      fail:
+        msg: "Local changes detected. Please commit or stash them before pulling."
+      when: git_status.stdout != ""
+
+    - name: Pull latest changes from git repository
+      git:
+        repo: 'https://your.git.repo.url.git'
+        dest: /path/to/your/repo
+        version: main  # Change to your desired branch
+      register: git_pull
+
+    - name: Install Composer dependencies
+      command: composer install
+      args:
+        chdir: /path/to/your/repo
+
+    - name: Install npm packages
+      command: npm install
+      args:
+        chdir: /path/to/your/repo
+
+    - name: Run tests against SQLite database
+      command: phpunit --configuration /path/to/your/repo/phpunit.xml
+      args:
+        chdir: /path/to/your/repo
+      environment:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: /path/to/your/test.db
+
+    - name: Backup MySQL database
+      command: mysqldump -u your_user -p'your_password' your_production_db > /path/to/backup/db_backup.sql
+      args:
+        chdir: /path/to/backup
+      when: git_pull.changed  # Only backup if pull was successful

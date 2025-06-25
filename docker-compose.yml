@@ -1,0 +1,16 @@
+version: '3'
+services:
+  control-machine-i4b:
+    build: .
+    container_name: control-machine-i4b
+    volumes:
+      - "./ansible:/ansible"
+    links:
+      - server1-i4b
+
+  server1-i4b:
+    image: alpine
+    command: sh -c "apk add --no-cache openssh python3 && echo 'root:P@ssw0rd1' | chpasswd && ssh-keygen -A && /usr/sbin/sshd && tail -f /dev/null"
+    container_name: server1-i4b
+    volumes:
+      - "./server1:/server1"

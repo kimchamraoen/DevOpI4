@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: web
+          image: nginx:alpine
+          ports:
+            - containerPort: 8080
+            - containerPort: 22
+          volumeMounts:
+            - name: app-volume
+              mountPath: /var/www/html
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+        - name: app
+          image: php:8.2-fpm
+          volumeMounts:
+            - name: app-volume
+              mountPath: /var/www/html
+        - name: db
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "Hello@123"
+            - name: MYSQL_DATABASE
+              value: "chamraoen-db"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: app-volume
+          hostPath:
+            path: /home/chamraoen/DevOp/ex1/terrain-booking-system
+            type: Directory
+        - name: nginx-config
+          hostPath:
+            path: /home/chamraoen/DevOp/ex1/docker/nginx/conf.d
+            type: Directory
+        - name: mysql-storage
+          hostPath:
+            path: /home/chamraoen/DevOp/ex1/mysql-data
+            type: DirectoryOrCreate

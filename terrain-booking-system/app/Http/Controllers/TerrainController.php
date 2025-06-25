@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Terrain;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+class TerrainController extends Controller
+{
+    use AuthorizesRequests;
+
+    /**
+     * List available terrains.
+     */
+    public function index(): JsonResponse
+    {
+        $terrains = Terrain::with(['owner', 'images', 'reviews'])
+            ->where('is_available', true)
+            ->paginate(10);
+
+        return response()->json($terrains);
+    }
+
+    /**
+     * Show a specific terrain by ID.
+     */
+    public function show(Terrain $terrain): JsonResponse
+    {
+        $terrain->load(['owner', 'images', 'reviews.user', 'bookings']);
+
+        return response()->json($terrain);
+    }
+
+    /**
+     * Store a new terrain.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'location' => 'required|string|max:255',
+            'price_per_hour' => 'required|numeric|min:0',
+            'price_per_day' => 'required|numeric|min:0',
+            'available_from' => 'nullable|date',
+            'available_to' => 'nullable|date|after:available_from',
+        ]);
+
+        // $validated['owner_id'] = auth()->id();
+
+        $terrain = Terrain::create($validated);
+
+        return response()->json($terrain, 201);
+    }
+
+    /**
+     * Update a terrain by ID.
+     */
+    public function update(Request $request, Terrain $terrain): JsonResponse
+    {
+        // Authorization check using TerrainPolicy
+        $this->authorize('update', $terrain);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'location' => 'sometimes|string|max:255',
+            'price_per_hour' => 'sometimes|numeric|min:0',
+            'price_per_day' => 'sometimes|numeric|min:0',
+            'available_from' => 'nullable|date',
+            'available_to' => 'nullable|date|after:available_from',
+            'is_available' => 'sometimes|boolean',
+        ]);
+
+        $terrain->update($validated);
+
+        return response()->json($terrain);
+    }
+
+    /**
+     * Delete a terrain by ID.
+     */
+    public function destroy(Terrain $terrain): JsonResponse
+    {
+        // Authorization check using TerrainPolicy
+        $this->authorize('delete', $terrain);
+
+        $terrain->delete();
+
+        return response()->json(null, 204);
+    }
+}
